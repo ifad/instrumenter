@@ -23,7 +23,7 @@ module Instrumenter
     def define!
       define_log_subscriber!
       define_controller_runtime!
-      define_railtie!
+      define_railtie! if defined?(Rails)
     end
 
     protected
