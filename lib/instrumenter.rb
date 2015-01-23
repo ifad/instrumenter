@@ -22,7 +22,7 @@ module Instrumenter
 
     def define!
       define_log_subscriber!
-      define_controller_runtime!
+      define_controller_runtime! if defined?(ApplicationController)
       define_railtie! if defined?(Rails)
     end
 
