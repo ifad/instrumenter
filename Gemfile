@@ -6,6 +6,7 @@ git_source(:ifad) { |repo| "git@github.com:ifad/#{repo}.git" }
 
 gem 'appraisal2'
 gem 'byebug'
+gem 'rails'
 gem 'rake'
 gem 'rspec'
 gem 'simplecov'

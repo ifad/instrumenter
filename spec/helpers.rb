@@ -8,20 +8,6 @@ module Helpers
   def notification_event(duration:, payload:)
     instance_double(ActiveSupport::Notifications::Event, duration: duration, payload: payload)
   end
-
-  def fake_railtie_base
-    Class.new do
-      class << self
-        def initializer(name, &block)
-          initializers[name] = block
-        end
-
-        def initializers
-          @initializers ||= {}
-        end
-      end
-    end
-  end
 end
 
 RSpec.configure do |config|

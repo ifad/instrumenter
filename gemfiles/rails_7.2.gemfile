@@ -5,6 +5,7 @@ source "https://rubygems.org"
 gem "appraisal2"
 gem "byebug"
 gem "rake"
+gem "rails", "~> 7.2.0"
 gem "rspec"
 gem "simplecov"
 gem "rubocop", :require => false
@@ -12,8 +13,5 @@ gem "rubocop-packaging", :require => false
 gem "rubocop-performance", :require => false
 gem "rubocop-rake", :require => false
 gem "rubocop-rspec", :require => false
-gem "activesupport", "~> 8.1.0"
-gem "actionpack", "~> 8.1.0"
-gem "railties", "~> 8.1.0"
 
 gemspec :path => "../"

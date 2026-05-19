@@ -11,10 +11,8 @@ if ENV['COVERAGE']
 end
 
 require 'rspec'
-require 'active_support/concern'
-require 'active_support/core_ext/module/attr_internal'
-require 'active_support/core_ext/string/inflections'
-require 'active_support/lazy_load_hooks'
+require 'rails'
+require 'action_controller/railtie'
 require 'instrumenter'
 
 require_relative 'helpers'

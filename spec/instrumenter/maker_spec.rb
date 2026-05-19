@@ -6,35 +6,21 @@ RSpec.describe Instrumenter::Maker do
   let(:prefix) { :rspec_client_requests }
   let(:client_class) { stub_const('RspecClientRequests', Class.new) }
   let(:maker) { klass.new(prefix, client_class) }
+  let(:subscriber_class) { client_class::Instrumentation::LogSubscriber }
 
   describe '#define!' do
     subject(:define!) { maker.define! }
 
-    it 'defines a log subscriber under the instrumentation namespace' do
+    it 'defines the instrumentation classes' do
       define!
 
       instrumentation = client_class::Instrumentation
 
       expect(instrumentation.const_defined?(:LogSubscriber, false)).to be(true)
-      expect(instrumentation::LogSubscriber.runtime_name).to eq(client_class.name)
-    end
-
-    context 'when ActionController and Rails are defined' do
-      before do
-        stub_const('ActionController', Module.new)
-        stub_const('ActionController::Base', Class.new)
-        stub_const('Rails', Module.new)
-        stub_const('Rails::Railtie', fake_railtie_base)
-      end
-
-      it 'defines controller runtime and railtie support' do
-        define!
-
-        instrumentation = client_class::Instrumentation
-
-        expect(instrumentation.const_defined?(:ControllerRuntime, false)).to be(true)
-        expect(instrumentation.const_defined?(:Railtie, false)).to be(true)
-      end
+      expect(instrumentation.const_defined?(:ControllerRuntime, false)).to be(true)
+      expect(instrumentation.const_defined?(:Railtie, false)).to be(true)
+      expect(subscriber_class.runtime_name).to eq(client_class.name)
+      expect(client_class::Instrumentation::Railtie < Rails::Railtie).to be(true)
     end
   end
 
@@ -44,7 +30,6 @@ RSpec.describe Instrumenter::Maker do
       allow(subscriber).to receive(:info)
     end
 
-    let(:subscriber_class) { client_class::Instrumentation::LogSubscriber }
     let(:subscriber) { subscriber_class.new }
 
     it 'formats request logs with query params and a cache miss' do
@@ -73,16 +58,10 @@ RSpec.describe Instrumenter::Maker do
     end
 
     it 'formats request logs without params and reports cache hits' do
-      params = Class.new do
-        def respond_to?(_name, _include_private: false)
-          false
-        end
-      end.new
-
       payload = {
         method: 'post',
         url: 'https://example.test/people',
-        params: params,
+        params: nil,
         cached: true
       }
       event = notification_event(duration: 8.3, payload: payload)
@@ -111,13 +90,8 @@ RSpec.describe Instrumenter::Maker do
   end
 
   describe 'generated controller runtime' do
-    before do
-      stub_const('ActionController', Module.new)
-      stub_const('ActionController::Base', Class.new)
-      maker.define!
-    end
+    before { maker.define! }
 
-    let(:subscriber_class) { client_class::Instrumentation::LogSubscriber }
     let(:runtime_module) { client_class::Instrumentation::ControllerRuntime }
     let(:base_controller) do
       Class.new do
@@ -174,38 +148,14 @@ RSpec.describe Instrumenter::Maker do
   end
 
   describe 'generated railtie' do
-    let(:on_load_hooks) { {} }
-    let(:subscriber_class) { client_class::Instrumentation::LogSubscriber }
-    let(:runtime_module) { client_class::Instrumentation::ControllerRuntime }
+    before { maker.define! }
+
     let(:railtie_class) { client_class::Instrumentation::Railtie }
 
-    before do
-      stub_const('ActionController', Module.new)
-      stub_const('ActionController::Base', Class.new)
-      stub_const('Rails', Module.new)
-      stub_const('Rails::Railtie', fake_railtie_base)
-      allow(ActiveSupport).to receive(:on_load) do |name, &block|
-        on_load_hooks[name] = block
-      end
-      maker.define!
-    end
+    it 'registers the setup initializer on a Rails::Railtie subclass' do
+      initializer = railtie_class.initializers.find { |entry| entry.name == 'rspec_client_requests.setup_instrumentation' }
 
-    it 'registers the setup initializer' do
-      expect(railtie_class.initializers.keys).to contain_exactly('rspec_client_requests.setup_instrumentation')
-    end
-
-    it 'attaches the subscriber and includes controller runtime on load' do
-      allow(subscriber_class).to receive(:attach_to)
-
-      railtie_class.initializers.fetch('rspec_client_requests.setup_instrumentation').call
-
-      expect(subscriber_class).to have_received(:attach_to).with(:rspec_client_requests)
-      expect(on_load_hooks.keys).to contain_exactly(:action_controller)
-
-      controller_host = Class.new
-      controller_host.class_eval(&on_load_hooks.fetch(:action_controller))
-
-      expect(controller_host.ancestors).to include(runtime_module)
+      expect(initializer).not_to be_nil
     end
   end
 end

@@ -61,10 +61,10 @@ To install dependencies for all appraisal gemfiles, run:
 bundle exec appraisal install
 ```
 
-To run specs against a specific Active Support version, run:
+To run specs against a specific Rails version, run:
 
 ```sh
-bundle exec appraisal as-7.2 rspec
+bundle exec appraisal rails-7.2 rspec
 ```
 
 ### Testing matrix
