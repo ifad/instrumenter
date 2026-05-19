@@ -4,6 +4,8 @@ require 'active_support'
 require 'active_support/notifications'
 require 'active_support/log_subscriber'
 
+require_relative 'instrumenter/version'
+
 # Provides ActiveSupport-based instrumentation helpers for target classes.
 module Instrumenter
   LOG_MESSAGE_FORMAT = '  %<name>s: %<method>s %<url>s (%<duration>.1fms) - cache %<cache>s'

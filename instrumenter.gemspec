@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/ifad/instrumenter'
   spec.license       = 'MIT'
 
-  spec.files         = Dir.glob('{CHANGELOG.md,README.md,lib/**/*.rb}', File::FNM_DOTMATCH)
+  spec.files         = Dir.glob('{LICENSE,README.md,lib/**/*.rb}', File::FNM_DOTMATCH)
   spec.require_paths = ['lib']
 
   spec.metadata['rubygems_mfa_required'] = 'true'
