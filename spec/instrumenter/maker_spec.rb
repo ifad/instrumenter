@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'stringio'
 
 RSpec.describe Instrumenter::Maker do
   let(:prefix) { :rspec_client_requests }
@@ -30,7 +31,34 @@ RSpec.describe Instrumenter::Maker do
       allow(subscriber).to receive(:info)
     end
 
+    around do |example|
+      original_notifier = ActiveSupport::Notifications.notifier
+      original_subscribers = ActiveSupport::LogSubscriber.log_subscribers.dup
+      original_logger = ActiveSupport::LogSubscriber.logger
+
+      ActiveSupport::Notifications.notifier = ActiveSupport::Notifications::Fanout.new
+      ActiveSupport::LogSubscriber.log_subscribers.clear
+      ActiveSupport::LogSubscriber.logger = Logger.new(StringIO.new)
+      example.run
+    ensure
+      ActiveSupport::Notifications.notifier = original_notifier
+      ActiveSupport::LogSubscriber.log_subscribers.replace(original_subscribers)
+      ActiveSupport::LogSubscriber.logger = original_logger
+    end
+
     let(:subscriber) { subscriber_class.new }
+
+    it 'handles instrumented request events when attached' do
+      subscriber_class.attach_to(prefix)
+      ActiveSupport::Notifications.instrument(
+        "request.#{prefix}",
+        method: 'get',
+        url: 'https://example.test/people',
+        cached: false
+      )
+
+      expect(subscriber_class.runtime).to be_positive
+    end
 
     it 'formats request logs with query params and a cache miss' do
       params = Class.new do

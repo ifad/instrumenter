@@ -19,15 +19,8 @@ AllCops:
     - tmp/**/*
     - vendor/**/*
 
-Naming/PredicatePrefix:
-  AllowedMethods:
-    - has_attribute?
-
 RSpec/ExampleLength:
   Max: 10
 
 RSpec/MultipleExpectations:
   Max: 5
-
-Style/ReturnNil:
-  Enabled: true

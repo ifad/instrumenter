@@ -10,51 +10,6 @@ require_relative 'instrumenter/version'
 module Instrumenter
   LOG_MESSAGE_FORMAT = '  %<name>s: %<method>s %<url>s (%<duration>.1fms) - cache %<cache>s'
 
-  # Base log subscriber used to build per-prefix instrumentation subscribers.
-  class SubscriberBase < ActiveSupport::LogSubscriber
-    def request(event)
-      self.class.runtime += event.duration
-
-      info format(LOG_MESSAGE_FORMAT,
-                  name: self.class.runtime_name,
-                  method: event.payload[:method].upcase,
-                  url: request_url(event.payload),
-                  duration: event.duration,
-                  cache: cache_status(event.payload))
-    end
-
-    private
-
-    def request_url(payload)
-      query = payload[:params]&.to_param
-      return payload[:url] if query.to_s.empty?
-
-      "#{payload[:url]}?#{query}"
-    end
-
-    def cache_status(payload)
-      payload[:cached] ? 'HIT' : 'MISS'
-    end
-
-    class << self
-      def runtime=(value)
-        Thread.current[@runtime_key] = value
-      end
-
-      def runtime
-        Thread.current[@runtime_key] ||= 0
-      end
-
-      def reset_runtime
-        rt = runtime
-        self.runtime = 0
-        rt
-      end
-
-      attr_reader :runtime_name
-    end
-  end
-
   def self.instrument(target, prefix, klass = prefix.to_s.camelize.constantize)
     target.instance_eval do
       define_method :instrument do |action, payload, &block|
@@ -84,9 +39,7 @@ module Instrumenter
     protected
 
     def define_log_subscriber!
-      @subscriber = Class.new(SubscriberBase)
-      @subscriber.instance_variable_set :@runtime_name, @klass.name
-      @subscriber.instance_variable_set :@runtime_key, [@prefix, :runtime].join('_')
+      @subscriber = subscriber_implementation
       @ns.const_set :LogSubscriber, @subscriber
     end
 
@@ -111,6 +64,57 @@ module Instrumenter
     end
 
     private
+
+    def subscriber_implementation
+      impl = Class.new(ActiveSupport::LogSubscriber) do
+        def request(event)
+          self.class.runtime += event.duration
+
+          info format(Instrumenter::LOG_MESSAGE_FORMAT,
+                      name: self.class.runtime_name,
+                      method: event.payload[:method].upcase,
+                      url: request_url(event.payload),
+                      duration: event.duration,
+                      cache: cache_status(event.payload))
+        end
+
+        private
+
+        def request_url(payload)
+          query = payload[:params].to_param if payload[:params].respond_to?(:to_param)
+          return payload[:url] if query.to_s.empty?
+
+          "#{payload[:url]}?#{query}"
+        end
+
+        def cache_status(payload)
+          payload[:cached] ? 'HIT' : 'MISS'
+        end
+
+        class << self
+          def runtime=(value)
+            Thread.current[@runtime_key] = value
+          end
+
+          def runtime
+            Thread.current[@runtime_key] ||= 0
+          end
+
+          def reset_runtime
+            rt = runtime
+            self.runtime = 0
+            rt
+          end
+
+          attr_reader :runtime_name
+        end
+      end
+
+      impl.tap do
+        impl.instance_variable_set :@runtime_name, @klass.name
+        impl.instance_variable_set :@runtime_key, [@prefix, :runtime].join('_')
+      end
+    end
 
     def runtime_implementation
       attr_name  = [@prefix, :runtime].join('_')

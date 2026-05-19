@@ -4,8 +4,8 @@ source "https://rubygems.org"
 
 gem "appraisal2"
 gem "byebug"
-gem "rake"
 gem "rails", "~> 8.0.0"
+gem "rake"
 gem "rspec"
 gem "simplecov"
 gem "rubocop", :require => false

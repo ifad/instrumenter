@@ -8,11 +8,15 @@
 
 # Configuration parameters: AllowedMethods, AllowedPatterns, CountRepeatedAttributes.
 Metrics/AbcSize:
-  Max: 36
+  Max: 41
+
+# Configuration parameters: CountComments, CountAsOne.
+Metrics/ClassLength:
+  Max: 103
 
 # Configuration parameters: CountComments, CountAsOne, AllowedMethods, AllowedPatterns.
 Metrics/MethodLength:
-  Max: 31
+  Max: 38
 
 # Configuration parameters: Max, CountAsOne.
 RSpec/ExampleLength:

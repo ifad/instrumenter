@@ -29,7 +29,7 @@ module Awesome
     Instrumenter.instrument self, :awesome
 
     def send_request
-      instrument 'request', method: 'something',  url: 'something else', params: {foo: :bar} do
+      instrument 'request', method: 'something', url: 'something else', params: {foo: :bar} do
         # Actual HTTP Request send
       end
     end
