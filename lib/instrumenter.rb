@@ -3,6 +3,7 @@
 require 'active_support/notifications'
 require 'active_support/log_subscriber'
 
+# Provides ActiveSupport-based instrumentation helpers for target classes.
 module Instrumenter
   def self.instrument(target, prefix, klass = prefix.to_s.camelize.constantize)
     target.instance_eval do
@@ -14,6 +15,7 @@ module Instrumenter
     Maker.new(prefix, klass).define!
   end
 
+  # Builds the instrumentation classes and hooks for a notification prefix.
   class Maker
     LOG_MESSAGE_FORMAT = '  %<name>s: %<method>s %<url>s (%<duration>.1fms) - cache %<cache>s'
 
@@ -22,7 +24,7 @@ module Instrumenter
       @klass = klass
 
       @ns = Module.new
-      klass.const_set 'Instrumentation', @ns
+      klass.const_set :Instrumentation, @ns
     end
 
     def define!
@@ -35,12 +37,12 @@ module Instrumenter
 
     def define_log_subscriber!
       @subscriber = subscriber_implementation
-      @ns.const_set 'LogSubscriber', @subscriber
+      @ns.const_set :LogSubscriber, @subscriber
     end
 
     def define_controller_runtime!
       @runtime = runtime_implementation
-      @ns.const_set 'ControllerRuntime', @runtime
+      @ns.const_set :ControllerRuntime, @runtime
     end
 
     def define_railtie!
@@ -55,7 +57,7 @@ module Instrumenter
         end
       end
 
-      @ns.const_set 'Railtie', @railtie
+      @ns.const_set :Railtie, @railtie
     end
 
     private
@@ -70,9 +72,7 @@ module Instrumenter
           self.class.runtime += event.duration
 
           url = event.payload[:url]
-          if event.payload[:params] && event.payload[:params].respond_to?(:to_param)
-            url << '?' << event.payload[:params].to_param
-          end
+          url = "#{url}?#{event.payload[:params].to_param}" if event.payload[:params].respond_to?(:to_param)
 
           info format(LOG_MESSAGE_FORMAT,
                       name: self.class.runtime_name,
@@ -139,7 +139,7 @@ module Instrumenter
         define_method :log_process_action do |payload|
           messages = super(payload)
           runtime = payload[attr_name]
-          messages << (format("#{subscriber.runtime_name}: %.1fms", runtime.to_f)) if runtime
+          messages << format("#{subscriber.runtime_name}: %.1fms", runtime.to_f) if runtime
           messages
         end
       end)
