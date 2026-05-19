@@ -24,20 +24,17 @@ Or install it yourself as:
 ## Usage
 
 ```ruby
-  module Awesome
-    module Client
+module Awesome
+  module Client
+    Instrumenter.instrument self, :awesome
 
-      Instrumenter.instrument self, :awesome
-
-      def send_request
-        instrument 'request', method: 'something',  url: 'something else', params: {foo: :bar} do
-          # Actual HTTP Request send
-          #
-        end
+    def send_request
+      instrument 'request', method: 'something',  url: 'something else', params: {foo: :bar} do
+        # Actual HTTP Request send
       end
-
     end
   end
+end
 ```
 
 You'll get messages with timings in your log file, and aggregate timings at
