@@ -73,10 +73,16 @@ RSpec.describe Instrumenter::Maker do
     end
 
     it 'formats request logs without params and reports cache hits' do
+      params = Class.new do
+        def respond_to?(_name, _include_private: false)
+          false
+        end
+      end.new
+
       payload = {
         method: 'post',
         url: 'https://example.test/people',
-        params: Object.new,
+        params: params,
         cached: true
       }
       event = notification_event(duration: 8.3, payload: payload)

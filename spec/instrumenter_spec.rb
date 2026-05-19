@@ -49,7 +49,15 @@ RSpec.describe Instrumenter do
     end
 
     it 'creates only a log subscriber when Rails integrations are unavailable' do
-      instrumentation = client_class::Instrumentation
+      hide_const('Rails') if defined?(Rails)
+      hide_const('ActionController') if defined?(ActionController)
+
+      isolated_target = Module.new
+      isolated_class = stub_const('RspecClientApiWithoutRails', Class.new)
+
+      described_class.instrument(isolated_target, prefix, isolated_class)
+
+      instrumentation = isolated_class::Instrumentation
 
       expect(instrumentation.const_defined?(:LogSubscriber, false)).to be(true)
       expect(instrumentation.const_defined?(:ControllerRuntime, false)).to be(false)

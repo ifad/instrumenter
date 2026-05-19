@@ -13,5 +13,7 @@ gem "rubocop-performance", :require => false
 gem "rubocop-rake", :require => false
 gem "rubocop-rspec", :require => false
 gem "activesupport", :git => "https://github.com/rails/rails.git", :branch => "main"
+gem "actionpack", :git => "https://github.com/rails/rails.git", :branch => "main"
+gem "railties", :git => "https://github.com/rails/rails.git", :branch => "main"
 
 gemspec :path => "../"

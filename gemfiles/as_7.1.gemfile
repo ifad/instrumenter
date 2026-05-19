@@ -13,5 +13,7 @@ gem "rubocop-performance", :require => false
 gem "rubocop-rake", :require => false
 gem "rubocop-rspec", :require => false
 gem "activesupport", "~> 7.1.0"
+gem "actionpack", "~> 7.1.0"
+gem "railties", "~> 7.1.0"
 
 gemspec :path => "../"
