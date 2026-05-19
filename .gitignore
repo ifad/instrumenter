@@ -1,14 +1,20 @@
-/.bundle/
-/.yardoc
-/Gemfile.lock
-/_yardoc/
-/coverage/
-/doc/
-/pkg/
-/spec/reports/
-/tmp/
-*.bundle
-*.so
-*.o
-*.a
-mkmf.log
+# See https://github.com/weppos/gitignore/blob/weppos/Ruby.gitignore
+Gemfile.lock
+
+coverage
+rdoc
+tmp
+
+# Bundler
+.bundle
+pkg
+
+# YARD artifacts
+.yardoc
+_yardoc
+doc/
+
+gemfiles/*.lock
+bin/test
+
+spec/examples.txt

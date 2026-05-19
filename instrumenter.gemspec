@@ -1,23 +1,24 @@
-# coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'version'
+# frozen_string_literal: true
+
+$LOAD_PATH.push File.expand_path('lib', __dir__)
+require 'instrumenter/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "instrumenter"
+  spec.name          = 'instrumenter'
   spec.version       = Instrumenter::VERSION
-  spec.authors       = ["Marcello Barnaba"]
-  spec.email         = ["vjt@openssl.it"]
-  spec.summary       = %q{Add ActiveSupport instrumentation quickly}
-  spec.description   = %q{Quick DSL to plumb ActiveSupport instrumentation}
-  spec.homepage      = "https://github.com/ifad/instrumenter"
-  spec.license       = "MIT"
+  spec.authors       = ['Marcello Barnaba']
+  spec.email         = ['vjt@openssl.it']
+  spec.summary       = 'Add ActiveSupport instrumentation quickly'
+  spec.description   = 'Quick DSL to plumb ActiveSupport instrumentation'
+  spec.homepage      = 'https://github.com/ifad/instrumenter'
+  spec.license       = 'MIT'
 
-  spec.files         = `git ls-files -z`.split("\x0")
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
-  spec.require_paths = ["lib"]
+  spec.files         = Dir.glob('{LICENSE,README.md,lib/**/*.rb}', File::FNM_DOTMATCH)
+  spec.require_paths = ['lib']
 
-  spec.add_development_dependency "bundler", "~> 1.7"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.metadata['rubygems_mfa_required'] = 'true'
+
+  spec.required_ruby_version = '>= 3.0'
+
+  spec.add_dependency('activesupport', '>= 7.0')
 end
